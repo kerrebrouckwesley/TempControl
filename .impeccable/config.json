@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "C:/Users/WESLEY~1/AppData/Local/Temp/claude/c--Users-WesleyKerrebrouck-GitHub-TempControl/34a5c3f2-dacc-4335-bf6b-3245e151b185/scratchpad/handleiding.html"
+        ],
+        "createdAt": "2026-10-30T10:23:18.392Z",
+        "reason": "Claude: detector pairs dark-theme tokens with light-theme surfaces (e.g. #000 on #111820); actual same-theme pairs pass AA (muted 6.0:1 light, 6.3:1 dark)"
+      }
+    ]
+  }
+}

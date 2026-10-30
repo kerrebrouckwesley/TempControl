@@ -1,0 +1,470 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>QPRINTS System Monitor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: één leeskolom met een productkop (scherm-mockup naast de intro), daarna genummerde stappen op een verticale rail. */
+:root {
+  --bg: #f2f5f9;
+  --surface: #ffffff;
+  --ink: #0e1620;
+  --muted: #566274;
+  --line: #d8dfe8;
+  --cool: #0a6cff;
+  --hot: #e0302c;
+  --code-bg: #0f1722;
+  --code-ink: #dbe6f3;
+  --tip-bg: #e7f0ff;
+  --warn-bg: #fdecea;
+
+  --f-display: "Saira Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0a0e13;
+    --surface: #111820;
+    --ink: #e6ecf3;
+    --muted: #8b97a8;
+    --line: #232d39;
+    --cool: #46a9ff;
+    --hot: #ff5b4f;
+    --code-bg: #060a0f;
+    --code-ink: #d3e0ee;
+    --tip-bg: #0f2033;
+    --warn-bg: #2a1413;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0a0e13;
+  --surface: #111820;
+  --ink: #e6ecf3;
+  --muted: #8b97a8;
+  --line: #232d39;
+  --cool: #46a9ff;
+  --hot: #ff5b4f;
+  --code-bg: #060a0f;
+  --code-ink: #d3e0ee;
+  --tip-bg: #0f2033;
+  --warn-bg: #2a1413;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.6 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 80px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 64px; }
+
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; line-height: 1.1; margin: 0; }
+h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight: 700; letter-spacing: 0.01em; }
+h2 { font-size: 1.75rem; font-weight: 700; }
+h3 { font-size: 1.2rem; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+a { color: var(--cool); }
+.eyebrow {
+  font-family: var(--f-display); font-weight: 500; text-transform: uppercase;
+  letter-spacing: 0.22em; font-size: 0.8rem; color: var(--muted);
+}
+.slash { color: var(--hot); }
+.muted { color: var(--muted); }
+code { font-family: var(--f-mono); font-size: 0.88em; }
+:not(pre) > code { background: var(--line); padding: 0.1em 0.35em; border-radius: 4px; }
+kbd {
+  font-family: var(--f-mono); font-size: 0.85em; border: 1px solid var(--line);
+  border-bottom-width: 2px; border-radius: 4px; padding: 0 0.35em; background: var(--surface);
+}
+.ui { font-weight: 600; }
+
+/* ---------- kop ---------- */
+.hero { display: grid; grid-template-columns: 1fr 300px; gap: 40px; align-items: center; }
+.hero-text { display: flex; flex-direction: column; gap: 18px; }
+.hero-text .lede { font-size: 1.12rem; }
+.rule-legend { display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: 0.95rem; }
+.rule-legend span { display: inline-flex; align-items: center; gap: 8px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.dot.cool { background: var(--cool); }
+.dot.hot { background: var(--hot); }
+
+.device-col { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.device {
+  --ring: #1e8bff;
+  width: 280px; max-width: 100%; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, #1b1d21 0 62%, #0d0e10 70%);
+  padding: 22px; box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+}
+.screen {
+  width: 100%; height: 100%; border-radius: 50%; background: #020305;
+  border: 7px solid var(--ring);
+  box-shadow: 0 0 18px var(--ring), inset 0 0 22px var(--ring);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: #f2f4f7; font-family: var(--f-display); transition: border-color .5s, box-shadow .5s;
+}
+.screen .brand { font-weight: 700; font-size: 1.05rem; letter-spacing: 0.03em; }
+.screen .brand i { color: #e8242b; font-style: normal; }
+.screen .sub { font-size: 0.5rem; letter-spacing: 0.32em; color: #9aa0aa; margin-bottom: 8px; }
+.screen .row {
+  width: 72%; display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: 6px;
+  padding: 4px 0; border-bottom: 1px solid #2c3038;
+}
+.screen .row:last-child { border-bottom: 0; }
+.screen .row svg { width: 16px; height: 16px; stroke: #eef0f3; fill: none; stroke-width: 1.6; }
+.screen .lbl { font-weight: 700; font-size: 0.78rem; }
+.screen .val {
+  font-weight: 700; font-size: 1.55rem; line-height: 1; color: var(--v, #3fbaff);
+  font-variant-numeric: tabular-nums; transition: color .5s;
+}
+.screen .val sup { font-size: 0.45em; vertical-align: top; margin-left: 1px; }
+.try { width: 100%; max-width: 280px; display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; }
+.try label { display: flex; justify-content: space-between; color: var(--muted); }
+.try output { font-family: var(--f-mono); color: var(--ink); }
+.try input { width: 100%; accent-color: var(--cool); }
+
+/* ---------- benodigdheden ---------- */
+.needs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.need { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 6px; }
+.need h3 { font-size: 1.05rem; }
+.need p { font-size: 0.93rem; color: var(--muted); }
+
+/* ---------- stappen ---------- */
+section { display: flex; flex-direction: column; gap: 22px; }
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0; counter-reset: step; }
+.step { position: relative; padding: 0 0 40px 64px; display: flex; flex-direction: column; gap: 12px; counter-increment: step; }
+.step::before {
+  content: counter(step);
+  position: absolute; left: 0; top: -4px; width: 42px; height: 42px; border-radius: 50%;
+  display: grid; place-items: center; font: 700 1.2rem var(--f-display);
+  color: var(--cool); border: 2px solid var(--cool); background: var(--bg);
+}
+.step::after { content: ""; position: absolute; left: 20px; top: 44px; bottom: 6px; width: 2px; background: var(--line); }
+.step:last-child { padding-bottom: 0; }
+.step:last-child::after { display: none; }
+.step ol, .step ul { margin: 0; padding-left: 1.25em; display: flex; flex-direction: column; gap: 6px; max-width: 65ch; }
+.who { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-family: var(--f-display); }
+
+.code { position: relative; }
+pre {
+  margin: 0; background: var(--code-bg); color: var(--code-ink); border-radius: 8px;
+  padding: 14px 16px; padding-right: 92px; overflow-x: auto; font: 0.88rem/1.6 var(--f-mono);
+}
+.copy {
+  position: absolute; top: 8px; right: 8px; font: 600 0.75rem var(--f-body);
+  background: #1f2a38; color: #dbe6f3; border: 1px solid #34465c; border-radius: 6px; padding: 4px 10px; cursor: pointer;
+}
+.copy:hover { background: #2a3a4e; }
+.copy:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--cool); outline-offset: 2px; }
+
+.note { border-radius: 8px; padding: 12px 16px; font-size: 0.95rem; display: flex; flex-direction: column; gap: 6px; max-width: 70ch; }
+.note.tip { background: var(--tip-bg); }
+.note.warn { background: var(--warn-bg); }
+.note strong { font-weight: 600; }
+
+/* ---------- gebruik ---------- */
+.states { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.state { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+.state .tag { font: 700 0.85rem var(--f-display); letter-spacing: 0.14em; text-transform: uppercase; }
+.state p { font-size: 0.93rem; color: var(--muted); }
+
+/* ---------- problemen ---------- */
+.faq { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+details { border-bottom: 1px solid var(--line); }
+summary { cursor: pointer; padding: 14px 4px; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; font: 700 1.2rem var(--f-display); color: var(--muted); }
+details[open] summary::after { content: "–"; }
+.answer { padding: 0 4px 18px; display: flex; flex-direction: column; gap: 10px; }
+.answer ul { margin: 0; padding-left: 1.25em; display: flex; flex-direction: column; gap: 6px; max-width: 65ch; }
+
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.94rem; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--f-display); font-weight: 700; letter-spacing: 0.04em; }
+td code { white-space: nowrap; }
+
+footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 18px; }
+
+@media (max-width: 720px) {
+  .hero { grid-template-columns: 1fr; }
+  .device-col { order: -1; }
+  .needs, .states { grid-template-columns: 1fr; }
+  .step { padding-left: 54px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .screen, .screen .val { transition: none; }
+}
+</style>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="hero-text">
+      <span class="eyebrow">Handleiding · versie 1.0</span>
+      <h1>QPRINTS <span class="slash">//</span> System Monitor</h1>
+      <p class="lede">Een rond scherm naast je pc dat live je CPU-temperatuur, GPU-temperatuur en FPS toont. De pc stuurt de waarden elke seconde via de USB-C-kabel door.</p>
+      <div class="rule-legend">
+        <span><i class="dot cool"></i>Tot en met 50&nbsp;°C: blauw</span>
+        <span><i class="dot hot"></i>Boven 50&nbsp;°C: rood</span>
+      </div>
+      <p class="muted">Installeren duurt ongeveer 15 minuten. Daarna start alles vanzelf telkens als je je aanmeldt.</p>
+    </div>
+
+    <div class="device-col">
+      <div class="device" id="device" aria-label="Voorbeeld van het scherm">
+        <div class="screen">
+          <div class="brand">QPRINTS <i>//</i></div>
+          <div class="sub">SYSTEM MONITOR</div>
+          <div class="row">
+            <svg viewBox="0 0 16 16"><rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/><path d="M6 1v2.5M10 1v2.5M6 12.5V15M10 12.5V15M1 6h2.5M1 10h2.5M12.5 6H15M12.5 10H15"/></svg>
+            <span class="lbl">CPU</span><span class="val" id="vCpu">42<sup>°C</sup></span>
+          </div>
+          <div class="row">
+            <svg viewBox="0 0 16 16"><rect x="2" y="4" width="13" height="8" rx="1.5"/><circle cx="6" cy="8" r="2"/><circle cx="11" cy="8" r="2"/><path d="M1 3v11"/></svg>
+            <span class="lbl">GPU</span><span class="val" id="vGpu">48<sup>°C</sup></span>
+          </div>
+          <div class="row">
+            <svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="8.5" rx="1.2"/><path d="M8 11v2.5M5 13.5h6"/></svg>
+            <span class="lbl">FPS</span><span class="val" id="vFps">165</span>
+          </div>
+        </div>
+      </div>
+      <div class="try">
+        <label for="tempSlider">Probeer het: CPU-temperatuur <output id="tempOut">42 °C</output></label>
+        <input type="range" id="tempSlider" min="30" max="85" value="42">
+      </div>
+    </div>
+  </header>
+
+  <section aria-labelledby="needs-h">
+    <h2 id="needs-h">Wat je nodig hebt</h2>
+    <div class="needs">
+      <div class="need">
+        <h3>Het scherm</h3>
+        <p>Waveshare ESP32-S3-Touch-LCD-1.46 (rond, 412 × 412 pixels).</p>
+      </div>
+      <div class="need">
+        <h3>Een USB-C-datakabel</h3>
+        <p>Let op: sommige kabels kunnen alleen opladen. Gebruik een kabel die ook data doorgeeft.</p>
+      </div>
+      <div class="need">
+        <h3>Een Windows-pc</h3>
+        <p>Windows 10 of 11, 64-bit, met beheerdersrechten. Getest voor AMD Ryzen- en NVIDIA RTX-hardware.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="install-h">
+    <span class="eyebrow">Installeren</span>
+    <h2 id="install-h">In vier stappen klaar</h2>
+
+    <ol class="steps">
+      <li class="step">
+        <span class="who">Eenmalig · op een pc met VS Code</span>
+        <h3>Zet de software op het scherm</h3>
+        <p>Het scherm heeft eigen software (firmware) nodig. Die zet je er één keer op.</p>
+        <ol>
+          <li>Installeer <a href="https://code.visualstudio.com/" target="_blank" rel="noopener">Visual Studio Code</a>. Open het, klik links op <span class="ui">Extensions</span>, zoek <span class="ui">PlatformIO IDE</span> en klik op <span class="ui">Install</span>.</li>
+          <li>Kies <span class="ui">File → Open Folder</span> en open de map <code>firmware</code> uit het project.</li>
+          <li>Sluit het scherm met de USB-C-kabel aan op de pc.</li>
+          <li>Klik in de blauwe balk onderaan op het pijltje <span class="ui">→ Upload</span>. De eerste keer downloadt PlatformIO een paar minuten lang de nodige onderdelen.</li>
+          <li>Klaar zodra er <code>SUCCESS</code> staat. Op het scherm verschijnt <code>WACHTEN OP PC</code>.</li>
+        </ol>
+        <div class="note tip">
+          <strong>Upload mislukt of de poort wordt niet gevonden?</strong>
+          <span>Hou de <kbd>BOOT</kbd>-knop op het bord ingedrukt, druk kort op <kbd>RESET</kbd>, laat <kbd>BOOT</kbd> los en klik opnieuw op Upload.</span>
+        </div>
+      </li>
+
+      <li class="step">
+        <span class="who">Alleen als je nog geen setup-bestand hebt</span>
+        <h3>Maak het setup-bestand</h3>
+        <p>Heb je <code>TempMonitor-Setup-1.0.0.exe</code> al gekregen? Sla deze stap dan over. Anders maak je het zelf. Je hebt daarvoor de <a href="https://dotnet.microsoft.com/download/dotnet/10.0" target="_blank" rel="noopener">.NET 10 SDK</a> en Inno Setup 6 nodig.</p>
+        <div class="code">
+          <pre><code>winget install JRSoftware.InnoSetup
+cd pc-app
+powershell -ExecutionPolicy Bypass -File .\build-installer.ps1 -OutputDir E:\</code></pre>
+          <button class="copy" type="button">Kopiëren</button>
+        </div>
+        <p class="muted">Vervang <code>E:\</code> door je USB-stick, of laat <code>-OutputDir</code> weg om het bestand in de map <code>dist</code> te zetten.</p>
+        <div class="note warn">
+          <strong>Werk-pc of beheerde laptop?</strong>
+          <span>Microsoft Defender for Endpoint blokkeert daar vaak zelfgebouwde setup-bestanden. Verkenner kan dan zelfs vastlopen. Schrijf het bestand dan rechtstreeks naar een USB-stick en voer het uit op je eigen gaming-pc.</span>
+        </div>
+      </li>
+
+      <li class="step">
+        <span class="who">Op de gaming-pc</span>
+        <h3>Voer de setup uit</h3>
+        <ol>
+          <li>Dubbelklik op <code>TempMonitor-Setup-1.0.0.exe</code>.</li>
+          <li>Verschijnt <span class="ui">Windows heeft uw pc beschermd</span>? Klik op <span class="ui">Meer informatie</span> en daarna op <span class="ui">Toch uitvoeren</span>. Die melding komt omdat het bestand niet digitaal ondertekend is.</li>
+          <li>Klik op <span class="ui">Ja</span> als Windows om beheerdersrechten vraagt.</li>
+          <li>Laat het vinkje <span class="ui">PawnIO-driver installeren</span> aan staan. Zonder die driver kan Windows de CPU-temperatuur niet uitlezen.</li>
+          <li>Klik op <span class="ui">Installeren</span> en daarna op <span class="ui">Voltooien</span>.</li>
+        </ol>
+        <p class="muted">De app draait onzichtbaar op de achtergrond. Je ziet dus geen venster of icoon, en dat is normaal.</p>
+      </li>
+
+      <li class="step">
+        <span class="who">Controle</span>
+        <h3>Kijk of het werkt</h3>
+        <p>Sluit het scherm aan op de gaming-pc. Binnen een paar seconden verandert <code>WACHTEN OP PC</code> in <code>SYSTEM MONITOR</code> en verschijnen de temperaturen. Start een game om de FPS te zien.</p>
+        <p>Komen er geen waarden? Kijk dan bij <a href="#problemen">Problemen oplossen</a>.</p>
+      </li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="use-h">
+    <span class="eyebrow">Dagelijks gebruik</span>
+    <h2 id="use-h">Wat het scherm je vertelt</h2>
+    <p>Je hoeft niets te doen. Na het aanmelden in Windows start de app vanzelf en zoekt het scherm op. Je kunt het scherm ook later aansluiten of even loskoppelen; de verbinding herstelt zich.</p>
+
+    <div class="states">
+      <div class="state">
+        <span class="tag" style="color: var(--cool)">Blauw</span>
+        <p>CPU en GPU zitten allebei op 50&nbsp;°C of lager. Normaal bij rustig gebruik.</p>
+      </div>
+      <div class="state">
+        <span class="tag" style="color: var(--hot)">Rood</span>
+        <p>Minstens één van de twee zit boven 50&nbsp;°C. De ring kleurt rood, net als het getal dat te warm is. Tijdens het gamen is dat gewoon.</p>
+      </div>
+      <div class="state">
+        <span class="tag">FPS</span>
+        <p>Het aantal beelden per seconde van het venster dat vooraan staat, dus van je game. Op het bureaublad staat er <code>--</code>.</p>
+      </div>
+      <div class="state">
+        <span class="tag">Wachten op pc</span>
+        <p>Het scherm krijgt geen gegevens. <code>VERBINDING VERLOREN</code> betekent dat er eerder wel gegevens kwamen, maar al 3 seconden niet meer.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Wil je…</th><th>Doe dit</th></tr></thead>
+        <tbody>
+          <tr><td>de app stoppen of opnieuw starten</td><td>Open <span class="ui">Taakplanner</span>, ga naar <span class="ui">Taakplannerbibliotheek</span>, klik met rechts op <code>TempMonitor</code> en kies <span class="ui">Beëindigen</span> of <span class="ui">Uitvoeren</span>.</td></tr>
+          <tr><td>zien wat de app doet</td><td>Open het logbestand <code>C:\ProgramData\TempMonitor\TempMonitor.log</code>.</td></tr>
+          <tr><td>alles verwijderen</td><td><span class="ui">Instellingen → Apps → Geïnstalleerde apps → TempMonitor → Verwijderen</span>. De automatische start wordt ook opgeruimd.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="problemen">
+    <span class="eyebrow">Hulp</span>
+    <h2 id="problemen">Problemen oplossen</h2>
+    <p>Begin altijd met het logbestand <code>C:\ProgramData\TempMonitor\TempMonitor.log</code>. Daarin staat of het scherm gevonden is en welke sensoren ontbreken.</p>
+
+    <div class="faq">
+      <details>
+        <summary>Het scherm blijft op "WACHTEN OP PC" staan</summary>
+        <div class="answer">
+          <ul>
+            <li>Probeer een andere USB-C-kabel. Een kabel die alleen oplaadt, laat het scherm wel oplichten maar geeft geen gegevens door.</li>
+            <li>Kijk in <span class="ui">Taakbeheer → Details</span> of <code>TempMonitor.exe</code> draait. Zo niet, start de taak in Taakplanner of meld je opnieuw aan.</li>
+            <li>Sluit programma's die de USB-poort van het scherm bezet houden, zoals de seriële monitor in VS Code of de Arduino IDE.</li>
+            <li>Staat in het log <code>Scherm niet gevonden</code>? Koppel het scherm los en sluit het opnieuw aan.</li>
+          </ul>
+        </div>
+      </details>
+      <details>
+        <summary>De CPU-temperatuur blijft op "--" staan</summary>
+        <div class="answer">
+          <p>De PawnIO-driver ontbreekt waarschijnlijk. Installeer hem in een terminal als administrator en herstart de pc:</p>
+          <div class="code">
+            <pre><code>winget install namazso.PawnIO</code></pre>
+            <button class="copy" type="button">Kopiëren</button>
+          </div>
+        </div>
+      </details>
+      <details>
+        <summary>FPS staat op "--" terwijl ik een game speel</summary>
+        <div class="answer">
+          <ul>
+            <li>De FPS-meting volgt het venster dat vooraan staat. Klik eenmaal in je game zodat die de focus heeft.</li>
+            <li>Staat in het log <code>PresentMon.exe niet gevonden</code> of <code>PresentMon kon niet starten</code>? Installeer de setup dan opnieuw.</li>
+          </ul>
+        </div>
+      </details>
+      <details>
+        <summary>De setup start niet of Verkenner loopt vast</summary>
+        <div class="answer">
+          <p>Dat gebeurt op beheerde pc's met Microsoft Defender for Endpoint. Daar blokkeert een beveiligingsregel nieuwe programma's die niet ondertekend zijn. De setup is in orde, maar mag op die pc niet draaien. Gebruik de setup op je eigen pc, of vraag je IT-beheerder om een uitzondering.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Het beeld staat ondersteboven of scheef</summary>
+        <div class="answer">
+          <p>Pas in <code>firmware/src/main.cpp</code> de instelling <code>ROTATION</code> aan (0, 1, 2 of 3) en upload de firmware opnieuw, zoals in stap 1.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section aria-labelledby="custom-h">
+    <span class="eyebrow">Aanpassen</span>
+    <h2 id="custom-h">Instellingen in de firmware</h2>
+    <p>Deze waarden staan bovenaan <code>firmware/src/main.cpp</code>. Na een wijziging upload je de firmware opnieuw, zoals in stap 1.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Instelling</th><th>Standaard</th><th>Wat het doet</th></tr></thead>
+        <tbody>
+          <tr><td><code>HOT_THRESHOLD</code></td><td><code>50.0</code></td><td>Boven deze temperatuur kleurt het scherm rood.</td></tr>
+          <tr><td><code>BRAND</code></td><td><code>"QPRINTS"</code></td><td>De naam bovenaan het scherm.</td></tr>
+          <tr><td><code>ROTATION</code></td><td><code>0</code></td><td>Draait het beeld telkens een kwartslag (0–3).</td></tr>
+          <tr><td><code>DATA_TIMEOUT_MS</code></td><td><code>3000</code></td><td>Na hoeveel milliseconden zonder gegevens het scherm "verbinding verloren" toont.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    Temperaturen via LibreHardwareMonitor, FPS via Intel PresentMon. Het scherm ontvangt elke seconde een regel als <code>CPU=42.5;GPU=48.0;FPS=165</code> over USB (115200 baud).
+  </footer>
+</div>
+
+<script>
+(function () {
+  var slider = document.getElementById('tempSlider');
+  var out = document.getElementById('tempOut');
+  var device = document.getElementById('device');
+  var vCpu = document.getElementById('vCpu');
+  var vGpu = document.getElementById('vGpu');
+  var vFps = document.getElementById('vFps');
+  var COOL_RING = '#1e8bff', HOT_RING = '#ff2a2a', COOL_VAL = '#3fbaff', HOT_VAL = '#ff4a3d';
+  var GPU = 48;
+
+  function update() {
+    var t = Number(slider.value);
+    var cpuHot = t > 50, gpuHot = GPU > 50;
+    out.textContent = t + ' °C';
+    vCpu.innerHTML = t + '<sup>°C</sup>';
+    vCpu.style.setProperty('--v', cpuHot ? HOT_VAL : COOL_VAL);
+    vGpu.style.setProperty('--v', gpuHot ? HOT_VAL : COOL_VAL);
+    vFps.style.setProperty('--v', cpuHot || gpuHot ? HOT_VAL : COOL_VAL);
+    device.style.setProperty('--ring', cpuHot || gpuHot ? HOT_RING : COOL_RING);
+  }
+  slider.addEventListener('input', update);
+  update();
+
+  document.querySelectorAll('.copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.parentElement.querySelector('code').innerText;
+      var done = function (msg) { btn.textContent = msg; setTimeout(function () { btn.textContent = 'Kopiëren'; }, 1600); };
+      try {
+        navigator.clipboard.writeText(text).then(function () { done('Gekopieerd'); }, function () { done('Selecteer en kopieer'); });
+      } catch (e) { done('Selecteer en kopieer'); }
+    });
+  });
+})();
+</script>
+
+</body></html>

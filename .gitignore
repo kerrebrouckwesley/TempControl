@@ -1,0 +1,12 @@
+# PlatformIO
+firmware/.pio/
+
+# .NET
+pc-app/bin/
+pc-app/obj/
+
+# Installer build
+pc-app/installer/publish/
+pc-app/installer/PresentMon-*.exe
+pc-app/installer/PresentMon-*.csv
+dist/
